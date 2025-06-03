@@ -34,13 +34,17 @@ En tant que développeur·se COBOL, vous travaillez en équipe pour concevoir un
   - Emprunts en cours
   - Statistiques
 
+```
+Les équipes sont libres de personnaliser les colonnes et fonctionnalités (e.g., amendes, réservations), tout en gérant les cas particuliers (données manquantes, homonymes, emprunts non rendus).
+```
+
 ## 📋 Modalités Pédagogiques
 
 ### 🔄 Phases du Projet
 
 1. **🎨 Conception en Amont**
-   - Définir les colonnes des tables, leurs types et relations
-   - Produire un schéma relationnel justifiant les choix
+   - Définir les colonnes des tables, leurs types et relations (clés secondaires)
+   - Produire un schéma relationnel justifiant les choix (diagramme ou texte)
    - Inclure la gestion du fichier `livres-input.dat`
 
 2. **💻 Développement**
@@ -55,15 +59,15 @@ En tant que développeur·se COBOL, vous travaillez en équipe pour concevoir un
 
 ### 🛠️ Verbes COBOL Requis
 - **Obligatoires :** `STRING`, `MOVE`, `COMPUTE`, `ROUNDED`
-- **Bonus :** `CALL`, `SORT`, `SEARCH`, requêtes SQL avancées
+- **Bonus :** `CALL`, `SORT`, `SEARCH`, requêtes SQL avancées (jointures, sous-requêtes).
 
 ## 📊 Modalités d'Évaluation
 
 ### 🎯 Critères d'Évaluation
-- **Conception :** Pertinence des colonnes, justification des choix, clarté du schéma
-- **Fonctionnalité :** Interaction PostgreSQL, enregistrement, ajout manuel
-- **Lisibilité :** Rapport clair et bien formaté
-- **Présentation :** Clarté, justification, démonstration convaincante
+- **Conception :** Pertinence des colonnes, justification des choix, clarté du schéma, prise en compte du fichier et de l’ajout manuel.  
+- **Fonctionnalité :** Interaction PostgreSQL, enregistrement, ajout manuel, traitements corrects, rapport conforme.  
+- **Lisibilité :** Rapport clair et bien formaté, résultats cohérents.  
+- **Présentation :** Clarté, justification des choix (surtout conception), démonstration convaincante, analyse réflexive des défis.
 
 ## 📦 Livrables
 
@@ -73,21 +77,26 @@ En tant que développeur·se COBOL, vous travaillez en équipe pour concevoir un
 - 🗄️ Scripts SQL (`*.sql`) pour initialiser/tester la base
 - 📄 Rapport généré (`*.dat`)
 - 🎯 Support de présentation (`*.pdf` ou `*.ppt`)
-- 📖 Documentation (`*.md` ou `*.pdf`)
+- 📖 Documentation (`*.md` ou `*.pdf`) : logique, choix de conception (colonnes, fichier), choix techniques, analyse réflexive.
 
 ### 🎙️ Présentation Orale
 - ⏰ **Durée :** 10 minutes (7 min exposé + 3 min questions)
 - 📋 **Contenu :** 
   - Schéma des tables
   - Justification des colonnes
-  - Démonstration fonctionnelle
+  - Démonstration fonctionnelle (lecture fichier, ajout manuel, rapport)
   - Défis rencontrés
 
 ## 🎯 Critères de Performance
 
-- ✅ **Conception :** Schéma relationnel clair et colonnes justifiées
-- ⚙️ **Fonctionnalité :** Interaction correcte avec PostgreSQL
-- 🛡️ **Robustesse :** Gestion des cas particuliers
-- 💻 **Syntaxe COBOL :** Conforme avec verbes requis
-- 🎤 **Présentation :** Clarté et démonstration fonctionnelle
-- 📚 **Documentation :** Claire et concise avec analyse réflexive
+- ✅ **Conception :** Schéma relationnel clair, colonnes pertinentes et justifiées, prise en compte du fichier et de l’ajout manuel
+
+- ⚙️ **Fonctionnalité :** Interaction correcte avec PostgreSQL, enregistrement des livres, ajout manuel, calculs précis (statistiques avec ROUNDED), rapport lisible
+
+- 🛡️ **Robustesse :** Gestion des cas particuliers (données manquantes, homonymes)
+
+- 💻 **Syntaxe COBOL :**  Conforme, avec verbes requis (STRING, MOVE, COMPUTE, ROUNDED)
+
+- 🎤 **Présentation :** Clarté, justification des choix de conception, démonstration fonctionnelle
+
+- 📚 **Documentation :** Claire, concise, avec analyse réflexive sur la conception et la gestion du fichier
