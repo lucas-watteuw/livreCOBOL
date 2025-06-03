@@ -1,0 +1,13 @@
+on commence par se connecter à postgres: psql -U postgres
+on lance le programme: \i exeBDD.sql
+
+pour compilation:
+
+ocesql menu.cbl menu.cob
+cobc -locesql -x -v -o run menu.cob
+
+pour l'éxécution:
+
+./run 
+
+si cela échoue: export LD_PRELOAD=/usr/local/lib/libocesql.so
