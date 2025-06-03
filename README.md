@@ -1,3 +1,5 @@
+gestionBDD
+
 # 📚 Projet Gestion de Bibliothèque - COBOL/PostgreSQL
 
 ## 👥 Équipe
@@ -100,3 +102,4 @@ Les équipes sont libres de personnaliser les colonnes et fonctionnalités (e.g.
 - 🎤 **Présentation :** Clarté, justification des choix de conception, démonstration fonctionnelle
 
 - 📚 **Documentation :** Claire, concise, avec analyse réflexive sur la conception et la gestion du fichier
+ main
