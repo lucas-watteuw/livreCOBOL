@@ -97,8 +97,14 @@
        01  TAB-DATA-LIVRES.
            05 WS-LIVRES-COMPT              PIC 9(03).
            05 WS-LIVRES OCCURS 999 TIMES.
-               10 WS-DATA-LIVRE            PIC X(150).      
-      
+               10 WS-ISBN                  PIC X(13).
+               10 WS-TITRE                 PIC X(38).
+               10 WS-NOM                   PIC X(22).
+               10 WS-PRENOM                PIC X(22).
+               10 WS-GENRE                 PIC X(16).
+               10 WS-DATE-PUBLICATION      PIC X(04).
+               10 WS-EDITEUR               PIC X(23).
+                     
       *----------------------------------------------------------------*
       * VARIABLES DE TRAVAIL POUR LES CALCULS                          *
       * Utilisées dans les boucles                                     *
@@ -125,8 +131,8 @@
               THRU 2000-ENRG-DATA-FIN.
 
       * 3. Génération de la base de de données SQL
-           PERFORM 6320-WRITE-F-OUTPUT-DEB
-              THRU 6320-WRITE-F-OUTPUT-FIN.
+      *     PERFORM 6320-WRITE-F-OUTPUT-DEB
+      *        THRU 6320-WRITE-F-OUTPUT-FIN.
 
       * 4. Finalisation et nettoyage
            PERFORM 5000-FIN-PROGRAMME-DEB
@@ -182,12 +188,31 @@
               ADD 1 TO WS-LIVRES-COMPT 
               MOVE WS-LIVRES-COMPT TO WS-CURRENT-LIVRE
       * Extraction des données depuis l'enregistrement                
-                      MOVE REC-DATA(1:150) 
-                        TO WS-DATA-LIVRE(WS-CURRENT-LIVRE)        
+                      MOVE REC-DATA(1:13) 
+                        TO WS-ISBN(WS-CURRENT-LIVRE)
+                      MOVE REC-DATA(14:38) 
+                        TO WS-TITRE(WS-CURRENT-LIVRE)
+                      MOVE REC-DATA(52:22) 
+                        TO WS-NOM(WS-CURRENT-LIVRE)
+                      MOVE REC-DATA(74:22) 
+                        TO WS-PRENOM (WS-CURRENT-LIVRE)
+                      MOVE REC-DATA(96:16) 
+                        TO WS-GENRE(WS-CURRENT-LIVRE)
+                      MOVE REC-DATA(112:4) 
+                        TO WS-DATE-PUBLICATION(WS-CURRENT-LIVRE)
+                      MOVE REC-DATA(116:23) 
+                        TO WS-EDITEUR(WS-CURRENT-LIVRE)
+
       * Traces de débogage pour vérification des données
-      D               DISPLAY "  Ajout livre: " 
-      D                   WS-DATA-LIVRE(WS-CURRENT-LIVRE)   
-      D              DISPLAY "  Nombre de livres traités: "
+      D       DISPLAY "Livre #" WS-CURRENT-LIVRE 
+      D               " | ISBN: " WS-ISBN(WS-CURRENT-LIVRE)
+      D               " | Titre: " WS-TITRE(WS-CURRENT-LIVRE)
+      D               " | Nom: " WS-NOM(WS-CURRENT-LIVRE)
+      D               " | Prénom: " WS-PRENOM(WS-CURRENT-LIVRE)
+      D               " | Genre: " WS-GENRE(WS-CURRENT-LIVRE)
+      D               " | Date: " WS-DATE-PUBLICATION(WS-CURRENT-LIVRE)
+      D               " | Editeur: " WS-EDITEUR(WS-CURRENT-LIVRE)
+      D       DISPLAY "  Nombre de livres traités: "
       D                   WS-LIVRES-COMPT
 
       * Lecture de l'enregistrement suivant
@@ -338,15 +363,15 @@
        
       * === DONNÉES DES LIVRES ===
       * Boucle de traitement pour chaque livre enregistré
-           PERFORM VARYING WS-IDX FROM 1 BY 1 
-                                  UNTIL WS-IDX > WS-CURRENT-LIVRE
+      *     PERFORM VARYING WS-IDX FROM 1 BY 1 
+      *                            UNTIL WS-IDX > WS-CURRENT-LIVRE
+      * 
+      *        MOVE WS-DATA-LIVRE(WS-IDX) TO REC-F-OUTPUT
+      *        WRITE REC-F-OUTPUT AFTER 1 
+      *     END-PERFORM.  
 
-              MOVE WS-DATA-LIVRE(WS-IDX) TO REC-F-OUTPUT
-              WRITE REC-F-OUTPUT AFTER 1 
-           END-PERFORM.  
-
-       6320-WRITE-F-OUTPUT-FIN.
-           EXIT.
+      * 6320-WRITE-F-OUTPUT-FIN.
+      *     EXIT.
 
       ******************************************************************
       * === 9000 === MODULES DE TERMINAISON DU PROGRAMME               *
