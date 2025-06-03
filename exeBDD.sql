@@ -1,5 +1,34 @@
 CREATE DATABASE IF NOT EXISTS bibli;
 USE blog;
 
-DROP TABLE IF EXISTS
+DROP TABLE IF EXISTS Livres;
+DROP TABLE IF EXISTS Auteurs;
+DROP TABLE IF EXISTS Genre;
+DROP TABLE IF EXISTS Emprunt;
 
+CREATE TABLE Livres(
+    ID-Livres INT(13) PRIMARY KEY NOT NULL,
+    Titre VARCHAR(38),
+    Date_parution INT(4),
+    Editions VARCHAR(23)
+)
+
+CREATE TABLE Auteurs(
+    Nom VARCHAR(22) PRIMARY KEY NOT NULL,
+    Prenom VARCHAR(22),
+    Livres VARCHAR(38)?
+    CONSTRAINT Livres FOREIGN KEY (Livres) REFERENCES Livres (ID-Livres)
+)
+
+CREATE TABLE Genre(
+    Nom VARCHAR(16) PRIMARY KEY NOT NULL
+)
+
+CREATE TABLE Emprunt(
+    Statut BOOLEAN,
+    Date_emprunt DATE,
+    Date_retour DATE,
+    CONSTRAINT Statut FOREIGN KEY (Statut) REFERENCES Livres (ID_Livres)
+)
+
+INSERT
