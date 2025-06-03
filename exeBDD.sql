@@ -1,22 +1,18 @@
 CREATE DATABASE IF NOT EXISTS bibli;
-USE blog;
+USE bibli;
 
 DROP TABLE IF EXISTS Livres;
 DROP TABLE IF EXISTS Auteurs;
 DROP TABLE IF EXISTS Genre;
 DROP TABLE IF EXISTS Emprunt;
 
-CREATE TABLE Livres(
-    ID-Livres INT(13) PRIMARY KEY NOT NULL,
-    Titre VARCHAR(38),
-    Date_parution INT(4),
-    Editions VARCHAR(23)
-)
+CREATE TABLE livres(ID_livres INT(13) PRIMARY KEY NOT NULL,Titre VARCHAR(38),Date_parution INT(4),Editions VARCHAR(23)
+);
 
 CREATE TABLE Auteurs(
-    Nom VARCHAR(22) PRIMARY KEY NOT NULL,
+    Nom VARCHAR(22),
     Prenom VARCHAR(22),
-    Livres VARCHAR(38)?
+    Livres VARCHAR(38),
     CONSTRAINT Livres FOREIGN KEY (Livres) REFERENCES Livres (ID-Livres)
 )
 
@@ -42,7 +38,7 @@ INSERT INTO Genre (Nom) VALUES
 ('Theatre'),
 ('Conte');
 
--- LIVRES
+
 INSERT INTO Livres (ID_Livre, Titre, Date_parution, Editions) VALUES
 (9780141185064, '1984', 1949, 'Penguin Books'),
 (9780061120084, 'To Kill a Mockingbird', 1960, 'HarperCollins'),
@@ -97,7 +93,7 @@ INSERT INTO Livres (ID_Livre, Titre, Date_parution, Editions) VALUES
 (9782253086215, 'Le Cid', 1636, 'Le Livre de Poche'),
 (9782080705211, 'Phedre', 1677, 'Flammarion');
 
--- AUTEURS
+
 INSERT INTO Auteurs (Nom, Prenom, ID_Livre) VALUES
 ('Orwell', 'George', 9780141185064),
 ('Lee', 'Harper', 9780061120084),
