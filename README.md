@@ -1,5 +1,3 @@
-gestionBDD
-
 # 📚 Projet Gestion de Bibliothèque - COBOL/PostgreSQL
 
 ## 👥 Équipe
