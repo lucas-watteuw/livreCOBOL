@@ -16,12 +16,12 @@
       *on créer le menu
               DISPLAY "entrer 1 pour ajouter un livre"
               DISPLAY "entrer 2 pour perdre un livre"
-              DISPLAY "entrer 3 pour prêter un livre"
+              DISPLAY "entrer 3 pour prêter ou rendre un livre"
               DISPLAY "entrer 4 pour modifier un livre"
               DISPLAY "entrer 5 pour chercher un livre"
               DISPLAY "entrer 9 pour quitter le programme"
               ACCEPT WS-COMMANDE-UTILISATEUR
-
+      *l'utilisateur vient d'entrer sa commande, on regarde ce qu'il veut faire
               EVALUATE WS-COMMANDE-UTILISATEUR 
                  WHEN EQUAL 1
                     DISPLAY "vous voulez ajouter un livre"
@@ -30,7 +30,7 @@
                     DISPLAY "vous voulez perdre un livre"
 
                  WHEN EQUAL 3 
-                    DISPLAY "vous voulez prêter un livre"
+                    DISPLAY "vous voulez prêter ou rendre un livre"
 
                  WHEN EQUAL 4 
                     DISPLAY "vous voulez modifier un livre"
