@@ -114,34 +114,48 @@
                10 WS-NOM-UNIQ              PIC X(13).
                10 WS-PRENOM-UNIQ           PIC X(22).
                10 WS-ID-AUTEUR             PIC 9(03)    VALUE ZEROS.
+
+      *----------------------------------------------------------------*       
+      * Table pour stocker jusqu'à 999 genres                          *
+      *----------------------------------------------------------------*
+       01  TAB-DATA-GENRES.
+           05 WS-GENRES-COMPT              PIC 9(03).
+           05 WS-GENRES OCCURS 999 TIMES INDEXED BY IDX-GENRE.
+               10 WS-GENRE-UNIQ            PIC X(16).
+               10 WS-ID-GENRE              PIC 9(03)    VALUE ZEROS.
                      
       *----------------------------------------------------------------*
       * VARIABLES DE TRAVAIL                                           *
       * Utilisées dans les boucles                                     *
       *----------------------------------------------------------------*
        01 WS-WORK-VARIABLES.
-           05 WS-IDX                    PIC 9(03)    VALUE ZEROS.
-           05 WS-CURRENT-LIVRE          PIC 9(03)    VALUE ZEROS.
-           05 WS-CURRENT-AUTEUR         PIC 9(03)    VALUE ZEROS.
-           05 WS-AUTEUR-EXISTE          PIC X(01)    VALUE 'N'.
-           05 WS-NB-AUTEURS             PIC 9(03)     VALUE 0.
+           05 WS-IDX                       PIC 9(03)    VALUE ZEROS.
+           05 WS-CURRENT-LIVRE             PIC 9(03)    VALUE ZEROS.
+           05 WS-CURRENT-AUTEUR            PIC 9(03)    VALUE ZEROS.
+           05 WS-AUTEUR-EXISTE             PIC X(01)    VALUE 'N'.
+           05 WS-NB-AUTEURS                PIC 9(03)    VALUE 0.
+           05 WS-CURRENT-GENRE             PIC 9(03)    VALUE ZEROS.
+           05 WS-GENRE-EXISTE              PIC X(01)    VALUE 'N'.
+           05 WS-NB-GENRES                 PIC 9(03)    VALUE 0.
   
       *----------------------------------------------------------------*
       * VARIABLES D'ECRITURE                                           *
       *----------------------------------------------------------------*
-       01 WS-LIGNE-ED                   PIC X(200).
-       01 WS-INSERT-ED                  PIC X(12)
-           VALUE "INSERT INTO ".
-       01 WS-INSERT-AUTEUR-ED           PIC X(31)    
-           VALUE "auteurs (nom, prenom) VALUES ('".
-       01 WS-INSERT-GENRE-ED            PIC X(21)    
-           VALUE "genre (Nom) VALUES ('".
-       01 WS-INSERT-LIVRE-ED            PIC X(41) VALUE 
+       01 WS-LIGNE-ED                      PIC X(200).
+       01 WS-INSERT-ED                     PIC X(12)     VALUE 
+           "INSERT INTO ".
+       01 WS-VALUE-ED                      PIC X(08)     VALUE
+           "VALUES (".       
+       01 WS-INSERT-AUTEUR-ED              PIC X(31)     VALUE 
+           "auteurs (nom, prenom) VALUES ('".
+       01 WS-INSERT-GENRE-ED               PIC X(21)     VALUE 
+           "genre (nom) VALUES ('".
+       01 WS-INSERT-LIVRE-ED               PIC X(41)     VALUE 
            "livres (id_livres, titre, date_parution, ".
-       01 WS-INSERT-LIVRE-ED2           PIC X(31) VALUE 
+       01 WS-INSERT-LIVRE-ED2              PIC X(31)     VALUE 
            "editions, fk_genre, fk_auteur) ".
-       01 WS-VALUE-ED                   PIC X(08) VALUE "VALUES (".
-       01 WS-ID-AUTEUR-ED               PIC 9(03). 
+       01 WS-ID-AUTEUR-ED                  PIC 9(03). 
+       01 WS-ID-GENRE-ED                   PIC 9(03). 
 
 
       ****************************************************************** 
@@ -192,6 +206,7 @@
       * Initialisation des compteurs de données
            MOVE 0 TO WS-LIVRES-COMPT.
            MOVE 0 TO WS-AUTEURS-COMPT.
+           MOVE 0 TO WS-GENRES-COMPT.
 
        1000-INITIALISATION-FIN.
            EXIT.
@@ -218,9 +233,12 @@
            PERFORM UNTIL WS-FS-INPUT-STATUS-EOF
               ADD 1 TO WS-LIVRES-COMPT
               ADD 1 TO WS-AUTEURS-COMPT 
+              ADD 1 TO WS-GENRES-COMPT   
               MOVE WS-LIVRES-COMPT TO WS-CURRENT-LIVRE
               MOVE WS-AUTEURS-COMPT TO WS-CURRENT-AUTEUR
+              MOVE WS-GENRES-COMPT TO WS-CURRENT-GENRE
               MOVE 'N' TO WS-AUTEUR-EXISTE
+              MOVE 'N' TO WS-GENRE-EXISTE
 
       * Extraction des données depuis l'enregistrement                
               MOVE REC-DATA(1:13) 
@@ -259,12 +277,29 @@
                  MOVE WS-PRENOM(WS-CURRENT-LIVRE) 
                        TO WS-PRENOM-UNIQ(WS-NB-AUTEURS)
       D          DISPLAY "Nouveau auteur trouvé : "
-      D                   WS-PRENOM(WS-CURRENT-LIVRE) " " 
-      D                   WS-NOM(WS-CURRENT-LIVRE)
       D        ELSE
       D          DISPLAY "Auteur déjà existant : "
-      D                   WS-PRENOM(WS-CURRENT-LIVRE) " " 
-      D                   WS-NOM(WS-CURRENT-LIVRE)
+               END-IF
+
+      * Vérifier si le genre existe déjà
+              PERFORM VARYING WS-CURRENT-GENRE FROM 1 BY 1 
+                        UNTIL WS-CURRENT-GENRE > WS-NB-GENRES
+                 IF WS-GENRE(WS-CURRENT-LIVRE) 
+                        EQUAL WS-GENRE-UNIQ(WS-CURRENT-GENRE)
+                    MOVE 'O' TO WS-GENRE-EXISTE 
+                 END-IF
+              END-PERFORM
+
+      *  Si genre nouveau, l'ajouter
+              IF WS-GENRE-EXISTE = 'N'
+                 ADD 1 TO WS-NB-GENRES
+                 ADD 1 TO WS-ID-GENRE(WS-NB-GENRES)
+                 MOVE WS-NB-GENRES TO WS-ID-GENRE(WS-NB-GENRES)
+                 MOVE WS-GENRE(WS-CURRENT-LIVRE) 
+                       TO WS-GENRE-UNIQ(WS-NB-GENRES)
+      D          DISPLAY "Nouveau genre trouvé : "
+      D        ELSE
+      D          DISPLAY "Genre déjà existant : "
                END-IF
 
       * Traces de débogage pour vérification des données
@@ -424,27 +459,6 @@
       *----------------------------------------------------------------*
       * Construction et écriture de la base SQL                        *
       *----------------------------------------------------------------*
-       
-      * === DONNÉES DES AUTEURS ===
-      * Boucle de traitement pour la table des auteurs
-           PERFORM VARYING WS-IDX FROM 1 BY 1 
-                                 UNTIL WS-IDX > WS-CURRENT-LIVRE
-
-      * Initialisation de la ligne d'édition
-               INITIALIZE WS-LIGNE-ED
-
-      * Construction de la ligne d'insertion pour l'auteur
-               MOVE WS-INSERT-ED        TO WS-LIGNE-ED(1:12)                  
-               MOVE WS-INSERT-AUTEUR-ED TO WS-LIGNE-ED(13:31)
-               MOVE WS-NOM-UNIQ(WS-IDX) TO WS-LIGNE-ED(44:13)
-               MOVE "', '"              TO WS-LIGNE-ED(57:4)
-               MOVE WS-PRENOM-UNIQ(WS-IDX) TO WS-LIGNE-ED(61:22)
-               MOVE "');"               TO WS-LIGNE-ED(83:3)
-
-      * Écriture de la ligne d'insertion dans le fichier de sortie
-               WRITE REC-F-OUTPUT FROM WS-LIGNE-ED AFTER 1 
-           END-PERFORM. 
-
 
       * === DONNÉES DES LIVRES ===
       * Boucle de traitement pour la table des livres
@@ -456,6 +470,10 @@
       * Recherche de l'auteur correspondant
                PERFORM 7010-RECHERCHE-AUTEUR-DEB
                   THRU 7010-RECHERCHE-AUTEUR-FIN
+
+      * Recherche dU genre correspondant
+               PERFORM 7020-RECHERCHE-GENRE-DEB
+                  THRU 7020-RECHERCHE-GENRE-FIN  
 
       * Construction de la ligne d'insertion pour l'auteur
                MOVE WS-INSERT-ED        TO WS-LIGNE-ED(1:12)                  
@@ -470,10 +488,58 @@
                MOVE ", '"               TO WS-LIGNE-ED(154:3)
                MOVE WS-EDITEUR(WS-IDX)  TO WS-LIGNE-ED(157:23)
                MOVE "', '"              TO WS-LIGNE-ED(180:4)
-               MOVE WS-ID-AUTEUR-ED     TO WS-LIGNE-ED(184:3)
-               MOVE "');"               TO WS-LIGNE-ED(187:3)
+               MOVE WS-ID-GENRE-ED      TO WS-LIGNE-ED(184:3)
+               MOVE "', '"              TO WS-LIGNE-ED(187:4)
+               MOVE WS-ID-AUTEUR-ED     TO WS-LIGNE-ED(191:3)
+               MOVE "');"               TO WS-LIGNE-ED(194:3)
 
                WRITE REC-F-OUTPUT FROM WS-LIGNE-ED AFTER 1 
+           END-PERFORM. 
+
+
+      * === DONNÉES DES AUTEURS ===
+      * Boucle de traitement pour la table des auteurs
+           PERFORM VARYING WS-IDX FROM 1 BY 1 
+                                 UNTIL WS-IDX > WS-CURRENT-LIVRE
+
+      * Initialisation de la ligne d'édition
+               INITIALIZE WS-LIGNE-ED
+
+      * Construction de la ligne d'insertion pour l'auteur  
+               MOVE WS-INSERT-ED        TO WS-LIGNE-ED(1:12)                  
+               MOVE WS-INSERT-AUTEUR-ED TO WS-LIGNE-ED(13:31)
+               MOVE WS-NOM-UNIQ(WS-IDX) TO WS-LIGNE-ED(44:13)
+               MOVE "', '"              TO WS-LIGNE-ED(57:4)
+               MOVE WS-PRENOM-UNIQ(WS-IDX) TO WS-LIGNE-ED(61:22)
+               MOVE "');"               TO WS-LIGNE-ED(83:3)
+
+      * Écriture de la ligne d'insertion dans le fichier de sortie
+               IF WS-NOM-UNIQ(WS-IDX)    NOT EQUAL SPACE AND
+                  WS-PRENOM-UNIQ(WS-IDX) NOT EQUAL SPACE
+                  WRITE REC-F-OUTPUT FROM WS-LIGNE-ED AFTER 1
+               END-IF
+           END-PERFORM. 
+
+
+      * === DONNÉES DES GENRES ===
+      * Boucle de traitement pour la table des genres
+           PERFORM VARYING WS-IDX FROM 1 BY 1 
+                                 UNTIL WS-IDX > WS-CURRENT-LIVRE      
+
+      * Initialisation de la ligne d'édition
+               INITIALIZE WS-LIGNE-ED
+
+      * Construction de la ligne d'insertion pour l'auteur  
+               MOVE WS-INSERT-ED        TO WS-LIGNE-ED(1:12)                  
+               MOVE WS-INSERT-GENRE-ED  TO WS-LIGNE-ED(13:21)
+               MOVE WS-GENRE-UNIQ(WS-IDX) TO WS-LIGNE-ED(34:16)
+               MOVE "');"               TO WS-LIGNE-ED(50:3)
+
+      * Écriture de la ligne d'insertion dans le fichier de sortie
+               IF WS-GENRE-UNIQ(WS-IDX) NOT EQUAL SPACE 
+                                        AND WS-ID-GENRE(WS-IDX) > 0
+                  WRITE REC-F-OUTPUT FROM WS-LIGNE-ED AFTER 1
+               END-IF
            END-PERFORM. 
 
        6320-WRITE-F-OUTPUT-FIN.
@@ -497,6 +563,20 @@
            END-SEARCH.
 
        7010-RECHERCHE-AUTEUR-FIN.
+           EXIT.
+
+       7020-RECHERCHE-GENRE-DEB.
+      * Recherche du genre correspondant
+           SET IDX-GENRE TO 1
+           
+           SEARCH WS-GENRES
+               AT END
+                   MOVE 0 TO WS-ID-GENRE-ED
+               WHEN WS-GENRE(WS-IDX) = WS-GENRE-UNIQ(IDX-GENRE)
+                   MOVE WS-ID-GENRE(IDX-GENRE) TO WS-ID-GENRE-ED
+           END-SEARCH.
+       
+       7020-RECHERCHE-GENRE-FIN.
            EXIT.
 
 
