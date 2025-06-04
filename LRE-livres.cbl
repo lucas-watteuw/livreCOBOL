@@ -110,9 +110,9 @@
       *----------------------------------------------------------------*
        01  TAB-DATA-AUTEURS.
            05 WS-AUTEURS-COMPT             PIC 9(03).
-           05 WS-LIVRES OCCURS 999 TIMES.
+           05 WS-AUTEURS OCCURS 999 TIMES INDEXED BY IDX-AUTEUR.
                10 WS-NOM-UNIQ              PIC X(13).
-               10 WS-PRENOM-UNIQ           PIC X(38).
+               10 WS-PRENOM-UNIQ           PIC X(22).
                10 WS-ID-AUTEUR             PIC 9(03)    VALUE ZEROS.
                      
       *----------------------------------------------------------------*
@@ -133,7 +133,7 @@
        01 WS-INSERT-ED                  PIC X(12)
            VALUE "INSERT INTO ".
        01 WS-INSERT-AUTEUR-ED           PIC X(31)    
-           VALUE "auteurs (Nom, Prenom) VALUES ('".
+           VALUE "auteurs (nom, prenom) VALUES ('".
        01 WS-INSERT-GENRE-ED            PIC X(21)    
            VALUE "genre (Nom) VALUES ('".
        01 WS-INSERT-LIVRE-ED            PIC X(41) VALUE 
@@ -252,6 +252,7 @@
       *  Si auteur nouveau, l'ajouter
               IF WS-AUTEUR-EXISTE = 'N'
                  ADD 1 TO WS-NB-AUTEURS
+                 ADD 1 TO WS-ID-AUTEUR(WS-NB-AUTEURS)
                  MOVE WS-NB-AUTEURS TO WS-ID-AUTEUR(WS-NB-AUTEURS)
                  MOVE WS-NOM(WS-CURRENT-LIVRE) 
                        TO WS-NOM-UNIQ(WS-NB-AUTEURS)
@@ -426,34 +427,35 @@
        
       * === DONNÉES DES AUTEURS ===
       * Boucle de traitement pour la table des auteurs
-      *     PERFORM VARYING WS-IDX FROM 1 BY 1 
-      *                           UNTIL WS-IDX > WS-CURRENT-LIVRE
-      * Initialisation de la ligne d'édition
-      *         INITIALIZE WS-LIGNE-ED
+           PERFORM VARYING WS-IDX FROM 1 BY 1 
+                                 UNTIL WS-IDX > WS-CURRENT-LIVRE
 
+      * Initialisation de la ligne d'édition
+               INITIALIZE WS-LIGNE-ED
+
+      * Construction de la ligne d'insertion pour l'auteur
+               MOVE WS-INSERT-ED        TO WS-LIGNE-ED(1:12)                  
+               MOVE WS-INSERT-AUTEUR-ED TO WS-LIGNE-ED(13:31)
+               MOVE WS-NOM-UNIQ(WS-IDX) TO WS-LIGNE-ED(44:13)
+               MOVE "', '"              TO WS-LIGNE-ED(57:4)
+               MOVE WS-PRENOM-UNIQ(WS-IDX) TO WS-LIGNE-ED(61:22)
+               MOVE "');"               TO WS-LIGNE-ED(83:3)
+
+      * Écriture de la ligne d'insertion dans le fichier de sortie
+               WRITE REC-F-OUTPUT FROM WS-LIGNE-ED AFTER 1 
+           END-PERFORM. 
 
 
       * === DONNÉES DES LIVRES ===
-      * Boucle de traitement pour la table des auteurs
+      * Boucle de traitement pour la table des livres
            PERFORM VARYING WS-IDX FROM 1 BY 1 
                                   UNTIL WS-IDX > WS-CURRENT-LIVRE
       * Initialisation de la ligne d'édition
                INITIALIZE WS-LIGNE-ED
 
       * Recherche de l'auteur correspondant
-               PERFORM VARYING WS-CURRENT-AUTEUR FROM 1 BY 1 
-                         UNTIL WS-CURRENT-AUTEUR > WS-NB-AUTEURS
-                            OR (WS-NOM(WS-IDX) 
-                         EQUAL WS-NOM-UNIQ(WS-CURRENT-AUTEUR)
-                           AND WS-PRENOM(WS-IDX) 
-                         EQUAL WS-PRENOM-UNIQ(WS-CURRENT-AUTEUR))
-                 IF WS-NOM(WS-IDX) EQUAL WS-NOM-UNIQ(WS-CURRENT-AUTEUR)
-                           AND WS-PRENOM(WS-IDX)
-                         EQUAL WS-PRENOM-UNIQ(WS-CURRENT-AUTEUR)
-                    MOVE WS-ID-AUTEUR(WS-CURRENT-AUTEUR) 
-                      TO WS-ID-AUTEUR-ED
-                 END-IF
-               END-PERFORM
+               PERFORM 7010-RECHERCHE-AUTEUR-DEB
+                  THRU 7010-RECHERCHE-AUTEUR-FIN
 
       * Construction de la ligne d'insertion pour l'auteur
                MOVE WS-INSERT-ED        TO WS-LIGNE-ED(1:12)                  
@@ -467,15 +469,36 @@
                MOVE WS-DATE-PUBLICATION(WS-IDX) TO WS-LIGNE-ED(150:4)
                MOVE ", '"               TO WS-LIGNE-ED(154:3)
                MOVE WS-EDITEUR(WS-IDX)  TO WS-LIGNE-ED(157:23)
-               MOVE "', '"              TO WS-LIGNE-ED(161:4)
-               MOVE WS-ID-AUTEUR-ED     TO WS-LIGNE-ED(165:3)
-               MOVE "');"               TO WS-LIGNE-ED(168:3)
+               MOVE "', '"              TO WS-LIGNE-ED(180:4)
+               MOVE WS-ID-AUTEUR-ED     TO WS-LIGNE-ED(184:3)
+               MOVE "');"               TO WS-LIGNE-ED(187:3)
 
                WRITE REC-F-OUTPUT FROM WS-LIGNE-ED AFTER 1 
            END-PERFORM. 
 
        6320-WRITE-F-OUTPUT-FIN.
            EXIT.
+
+      ******************************************************************
+      * === 7000 === MODULES COMPLEMENTAIRES                           *
+      ******************************************************************
+
+       7010-RECHERCHE-AUTEUR-DEB.
+
+      * Recherche de l'auteur correspondant
+           SET IDX-AUTEUR TO 1
+           
+           SEARCH WS-AUTEURS
+               AT END
+                   MOVE 0 TO WS-ID-AUTEUR-ED
+               WHEN WS-NOM(WS-IDX) = WS-NOM-UNIQ(IDX-AUTEUR)
+                AND WS-PRENOM(WS-IDX) = WS-PRENOM-UNIQ(IDX-AUTEUR)
+                   MOVE WS-ID-AUTEUR(IDX-AUTEUR) TO WS-ID-AUTEUR-ED
+           END-SEARCH.
+
+       7010-RECHERCHE-AUTEUR-FIN.
+           EXIT.
+
 
       ******************************************************************
       * === 9000 === MODULES DE TERMINAISON DU PROGRAMME               *

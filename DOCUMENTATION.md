@@ -25,3 +25,14 @@
 | Genre | 16 caractères | `PIC X(16)` | |
 | Date de publication | 4 caractères | `PIC X(4)` | |
 | Éditeur | 23 caractères | `PIC X(23)` | |
+
+
+Sibory s'est occupé de la gestion du sql et de la création des tables
+Vincent s'est occupé de la lecture, de l'enregistrement des données et la création du fichier .sql
+Lucas s'est occupé de la création de la partie CRUD du programme COBOL
+
+
+
+
+
+
