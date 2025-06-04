@@ -74,7 +74,7 @@
            RECORD CONTAINS 150 CHARACTERS 
            RECORDING MODE IS F.
 
-       01  REC-F-OUTPUT                     PIC X(150).
+       01  REC-F-OUTPUT                     PIC X(200).
 
        WORKING-STORAGE SECTION.
 
@@ -104,15 +104,46 @@
                10 WS-GENRE                 PIC X(16).
                10 WS-DATE-PUBLICATION      PIC X(04).
                10 WS-EDITEUR               PIC X(23).
+
+      *----------------------------------------------------------------*       
+      * Table pour stocker jusqu'à 999 auteurs                         *
+      *----------------------------------------------------------------*
+       01  TAB-DATA-AUTEURS.
+           05 WS-AUTEURS-COMPT             PIC 9(03).
+           05 WS-LIVRES OCCURS 999 TIMES.
+               10 WS-NOM-UNIQ              PIC X(13).
+               10 WS-PRENOM-UNIQ           PIC X(38).
+               10 WS-ID-AUTEUR             PIC 9(03)    VALUE ZEROS.
                      
       *----------------------------------------------------------------*
-      * VARIABLES DE TRAVAIL POUR LES CALCULS                          *
+      * VARIABLES DE TRAVAIL                                           *
       * Utilisées dans les boucles                                     *
       *----------------------------------------------------------------*
        01 WS-WORK-VARIABLES.
            05 WS-IDX                    PIC 9(03)    VALUE ZEROS.
            05 WS-CURRENT-LIVRE          PIC 9(03)    VALUE ZEROS.
-       
+           05 WS-CURRENT-AUTEUR         PIC 9(03)    VALUE ZEROS.
+           05 WS-AUTEUR-EXISTE          PIC X(01)    VALUE 'N'.
+           05 WS-NB-AUTEURS             PIC 9(03)     VALUE 0.
+  
+      *----------------------------------------------------------------*
+      * VARIABLES D'ECRITURE                                           *
+      *----------------------------------------------------------------*
+       01 WS-LIGNE-ED                   PIC X(200).
+       01 WS-INSERT-ED                  PIC X(12)
+           VALUE "INSERT INTO ".
+       01 WS-INSERT-AUTEUR-ED           PIC X(31)    
+           VALUE "auteurs (Nom, Prenom) VALUES ('".
+       01 WS-INSERT-GENRE-ED            PIC X(21)    
+           VALUE "genre (Nom) VALUES ('".
+       01 WS-INSERT-LIVRE-ED            PIC X(41) VALUE 
+           "livres (id_livres, titre, date_parution, ".
+       01 WS-INSERT-LIVRE-ED2           PIC X(31) VALUE 
+           "editions, fk_genre, fk_auteur) ".
+       01 WS-VALUE-ED                   PIC X(08) VALUE "VALUES (".
+       01 WS-ID-AUTEUR-ED               PIC 9(03). 
+
+
       ****************************************************************** 
        PROCEDURE DIVISION.    
       ****************************************************************** 
@@ -131,14 +162,13 @@
               THRU 2000-ENRG-DATA-FIN.
 
       * 3. Génération de la base de de données SQL
-      *     PERFORM 6320-WRITE-F-OUTPUT-DEB
-      *        THRU 6320-WRITE-F-OUTPUT-FIN.
+           PERFORM 6320-WRITE-F-OUTPUT-DEB
+              THRU 6320-WRITE-F-OUTPUT-FIN.
 
       * 4. Finalisation et nettoyage
            PERFORM 5000-FIN-PROGRAMME-DEB
               THRU 5000-FIN-PROGRAMME-FIN.
 
-      
 
       ******************************************************************
       * === 1000 === MODULE D'INITIALISATION                           *
@@ -161,6 +191,7 @@
 
       * Initialisation des compteurs de données
            MOVE 0 TO WS-LIVRES-COMPT.
+           MOVE 0 TO WS-AUTEURS-COMPT.
 
        1000-INITIALISATION-FIN.
            EXIT.
@@ -185,23 +216,55 @@
 
       * Boucle de traitement jusqu'à fin de fichier
            PERFORM UNTIL WS-FS-INPUT-STATUS-EOF
-              ADD 1 TO WS-LIVRES-COMPT 
+              ADD 1 TO WS-LIVRES-COMPT
+              ADD 1 TO WS-AUTEURS-COMPT 
               MOVE WS-LIVRES-COMPT TO WS-CURRENT-LIVRE
+              MOVE WS-AUTEURS-COMPT TO WS-CURRENT-AUTEUR
+              MOVE 'N' TO WS-AUTEUR-EXISTE
+
       * Extraction des données depuis l'enregistrement                
-                      MOVE REC-DATA(1:13) 
-                        TO WS-ISBN(WS-CURRENT-LIVRE)
-                      MOVE REC-DATA(14:38) 
-                        TO WS-TITRE(WS-CURRENT-LIVRE)
-                      MOVE REC-DATA(52:22) 
-                        TO WS-NOM(WS-CURRENT-LIVRE)
-                      MOVE REC-DATA(74:22) 
-                        TO WS-PRENOM (WS-CURRENT-LIVRE)
-                      MOVE REC-DATA(96:16) 
-                        TO WS-GENRE(WS-CURRENT-LIVRE)
-                      MOVE REC-DATA(112:4) 
-                        TO WS-DATE-PUBLICATION(WS-CURRENT-LIVRE)
-                      MOVE REC-DATA(116:23) 
-                        TO WS-EDITEUR(WS-CURRENT-LIVRE)
+              MOVE REC-DATA(1:13) 
+                TO WS-ISBN(WS-CURRENT-LIVRE)
+              MOVE REC-DATA(14:38) 
+                TO WS-TITRE(WS-CURRENT-LIVRE)
+              MOVE REC-DATA(52:22) 
+                TO WS-NOM(WS-CURRENT-LIVRE)
+              MOVE REC-DATA(74:22) 
+                TO WS-PRENOM(WS-CURRENT-LIVRE)
+              MOVE REC-DATA(96:16) 
+                TO WS-GENRE(WS-CURRENT-LIVRE)
+              MOVE REC-DATA(112:4) 
+                TO WS-DATE-PUBLICATION(WS-CURRENT-LIVRE)
+              MOVE REC-DATA(116:23) 
+                TO WS-EDITEUR(WS-CURRENT-LIVRE)
+
+      * Vérifier si l'auteur existe déjà
+              PERFORM VARYING WS-CURRENT-AUTEUR FROM 1 BY 1 
+                        UNTIL WS-CURRENT-AUTEUR > WS-NB-AUTEURS 
+                 IF WS-NOM(WS-CURRENT-LIVRE) 
+                        EQUAL WS-NOM-UNIQ(WS-CURRENT-AUTEUR)
+                        AND WS-PRENOM(WS-CURRENT-LIVRE) 
+                        EQUAL WS-PRENOM-UNIQ(WS-CURRENT-AUTEUR)
+                    MOVE 'O' TO WS-AUTEUR-EXISTE
+                 END-IF
+              END-PERFORM
+
+      *  Si auteur nouveau, l'ajouter
+              IF WS-AUTEUR-EXISTE = 'N'
+                 ADD 1 TO WS-NB-AUTEURS
+                 MOVE WS-NB-AUTEURS TO WS-ID-AUTEUR(WS-NB-AUTEURS)
+                 MOVE WS-NOM(WS-CURRENT-LIVRE) 
+                       TO WS-NOM-UNIQ(WS-NB-AUTEURS)
+                 MOVE WS-PRENOM(WS-CURRENT-LIVRE) 
+                       TO WS-PRENOM-UNIQ(WS-NB-AUTEURS)
+      D          DISPLAY "Nouveau auteur trouvé : "
+      D                   WS-PRENOM(WS-CURRENT-LIVRE) " " 
+      D                   WS-NOM(WS-CURRENT-LIVRE)
+      D        ELSE
+      D          DISPLAY "Auteur déjà existant : "
+      D                   WS-PRENOM(WS-CURRENT-LIVRE) " " 
+      D                   WS-NOM(WS-CURRENT-LIVRE)
+               END-IF
 
       * Traces de débogage pour vérification des données
       D       DISPLAY "Livre #" WS-CURRENT-LIVRE 
@@ -361,17 +424,58 @@
       * Construction et écriture de la base SQL                        *
       *----------------------------------------------------------------*
        
-      * === DONNÉES DES LIVRES ===
-      * Boucle de traitement pour chaque livre enregistré
+      * === DONNÉES DES AUTEURS ===
+      * Boucle de traitement pour la table des auteurs
       *     PERFORM VARYING WS-IDX FROM 1 BY 1 
-      *                            UNTIL WS-IDX > WS-CURRENT-LIVRE
-      * 
-      *        MOVE WS-DATA-LIVRE(WS-IDX) TO REC-F-OUTPUT
-      *        WRITE REC-F-OUTPUT AFTER 1 
-      *     END-PERFORM.  
+      *                           UNTIL WS-IDX > WS-CURRENT-LIVRE
+      * Initialisation de la ligne d'édition
+      *         INITIALIZE WS-LIGNE-ED
 
-      * 6320-WRITE-F-OUTPUT-FIN.
-      *     EXIT.
+
+
+      * === DONNÉES DES LIVRES ===
+      * Boucle de traitement pour la table des auteurs
+           PERFORM VARYING WS-IDX FROM 1 BY 1 
+                                  UNTIL WS-IDX > WS-CURRENT-LIVRE
+      * Initialisation de la ligne d'édition
+               INITIALIZE WS-LIGNE-ED
+
+      * Recherche de l'auteur correspondant
+               PERFORM VARYING WS-CURRENT-AUTEUR FROM 1 BY 1 
+                         UNTIL WS-CURRENT-AUTEUR > WS-NB-AUTEURS
+                            OR (WS-NOM(WS-IDX) 
+                         EQUAL WS-NOM-UNIQ(WS-CURRENT-AUTEUR)
+                           AND WS-PRENOM(WS-IDX) 
+                         EQUAL WS-PRENOM-UNIQ(WS-CURRENT-AUTEUR))
+                 IF WS-NOM(WS-IDX) EQUAL WS-NOM-UNIQ(WS-CURRENT-AUTEUR)
+                           AND WS-PRENOM(WS-IDX)
+                         EQUAL WS-PRENOM-UNIQ(WS-CURRENT-AUTEUR)
+                    MOVE WS-ID-AUTEUR(WS-CURRENT-AUTEUR) 
+                      TO WS-ID-AUTEUR-ED
+                 END-IF
+               END-PERFORM
+
+      * Construction de la ligne d'insertion pour l'auteur
+               MOVE WS-INSERT-ED        TO WS-LIGNE-ED(1:12)                  
+               MOVE WS-INSERT-LIVRE-ED  TO WS-LIGNE-ED(13:41)
+               MOVE WS-INSERT-LIVRE-ED2 TO WS-LIGNE-ED(54:31)
+               MOVE WS-VALUE-ED         TO WS-LIGNE-ED(85:8)
+               MOVE WS-ISBN(WS-IDX)     TO WS-LIGNE-ED(93:13)
+               MOVE ", '"               TO WS-LIGNE-ED(106:3)
+               MOVE WS-TITRE(WS-IDX)    TO WS-LIGNE-ED(109:38)
+               MOVE "', "               TO WS-LIGNE-ED(147:3)
+               MOVE WS-DATE-PUBLICATION(WS-IDX) TO WS-LIGNE-ED(150:4)
+               MOVE ", '"               TO WS-LIGNE-ED(154:3)
+               MOVE WS-EDITEUR(WS-IDX)  TO WS-LIGNE-ED(157:23)
+               MOVE "', '"              TO WS-LIGNE-ED(161:4)
+               MOVE WS-ID-AUTEUR-ED     TO WS-LIGNE-ED(165:3)
+               MOVE "');"               TO WS-LIGNE-ED(168:3)
+
+               WRITE REC-F-OUTPUT FROM WS-LIGNE-ED AFTER 1 
+           END-PERFORM. 
+
+       6320-WRITE-F-OUTPUT-FIN.
+           EXIT.
 
       ******************************************************************
       * === 9000 === MODULES DE TERMINAISON DU PROGRAMME               *
