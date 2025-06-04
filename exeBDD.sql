@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS bibli;
-USE bibli;
+CREATE DATABASE exobibli;
+\c exobibli;
 
 DROP TABLE IF EXISTS livres;
 DROP TABLE IF EXISTS auteurs;
