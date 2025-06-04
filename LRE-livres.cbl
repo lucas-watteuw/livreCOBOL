@@ -568,6 +568,64 @@
 
       D    DISPLAY "Début de génération du fichier SQL...".
 
+      *----------------------------------------------------------------* 
+      * === GÉNÉRATION DES REQUÊTES POUR LA TABLE AUTEURS ===
+      * Création des requêtes INSERT pour les auteurs uniques
+      * Évite les doublons grâce au tableau WS-AUTEURS dédoublonné
+           PERFORM VARYING WS-IDX FROM 1 BY 1 
+                                 UNTIL WS-IDX > WS-CURRENT-LIVRE
+
+      * Remise à zéro de la ligne de construction SQL
+               INITIALIZE WS-LIGNE-ED
+
+      * Construction de la requête INSERT INTO AUTEURS
+      * Format : INSERT INTO AUTEURS VALUES (ID_AUTEUR, 'NOM','PRENOM');
+               MOVE WS-INSERT-ED        TO WS-LIGNE-ED(1:12)                  
+               MOVE WS-INSERT-AUTEUR-ED TO WS-LIGNE-ED(13:31)
+      * Insertion de l'ID auteur (clé primaire)
+               MOVE WS-NOM-UNIQ(WS-IDX) TO WS-LIGNE-ED(44:13)
+               MOVE "', '"              TO WS-LIGNE-ED(57:4)
+      * Insertion du nom de famille de l'auteur
+               MOVE WS-PRENOM-UNIQ(WS-IDX) TO WS-LIGNE-ED(61:22)
+               MOVE "');"               TO WS-LIGNE-ED(83:3)
+
+      * Écriture conditionnelle : uniquement si nom et prénom existent
+               IF WS-NOM-UNIQ(WS-IDX)    NOT EQUAL SPACE AND
+                  WS-PRENOM-UNIQ(WS-IDX) NOT EQUAL SPACE
+                  WRITE REC-F-OUTPUT FROM WS-LIGNE-ED AFTER 1
+               END-IF
+           END-PERFORM. 
+
+
+      *----------------------------------------------------------------*
+      * === GÉNÉRATION DES REQUÊTES POUR LA TABLE GENRES ===
+      * Création des requêtes INSERT pour les genres uniques
+      * Évite les doublons grâce au tableau WS-GENRES dédoublonné
+           PERFORM VARYING WS-IDX FROM 1 BY 1 
+                                 UNTIL WS-IDX > WS-CURRENT-LIVRE      
+
+      * Remise à zéro de la ligne de construction SQL
+               INITIALIZE WS-LIGNE-ED
+
+      * Construction de la requête INSERT INTO GENRES
+      * Format : INSERT INTO GENRES VALUES (ID_GENRE, 'LIBELLE_GENRE');
+               MOVE WS-INSERT-ED        TO WS-LIGNE-ED(1:12)                  
+               MOVE WS-INSERT-GENRE-ED  TO WS-LIGNE-ED(13:21)
+      * Insertion du libellé du genre
+               MOVE WS-GENRE-UNIQ(WS-IDX) TO WS-LIGNE-ED(34:16)
+               MOVE "');"               TO WS-LIGNE-ED(50:3)
+
+      * Écriture conditionnelle : uniquement si genre valide et ID > 0
+               IF WS-GENRE-UNIQ(WS-IDX) NOT EQUAL SPACE 
+                                        AND WS-ID-GENRE(WS-IDX) > 0
+                  WRITE REC-F-OUTPUT FROM WS-LIGNE-ED AFTER 1
+               END-IF
+           END-PERFORM. 
+
+       6320-WRITE-F-OUTPUT-FIN.
+           EXIT.
+
+      *----------------------------------------------------------------* 
       * === GÉNÉRATION DES REQUÊTES POUR LA TABLE LIVRES ===
       * Création d'une requête INSERT pour chaque livre traité
            PERFORM VARYING WS-IDX FROM 1 BY 1 
@@ -613,61 +671,6 @@
                WRITE REC-F-OUTPUT FROM WS-LIGNE-ED AFTER 1 
            END-PERFORM. 
 
-      *----------------------------------------------------------------* 
-      * === GÉNÉRATION DES REQUÊTES POUR LA TABLE AUTEURS ===
-      * Création des requêtes INSERT pour les auteurs uniques
-      * Évite les doublons grâce au tableau WS-AUTEURS dédoublonné
-           PERFORM VARYING WS-IDX FROM 1 BY 1 
-                                 UNTIL WS-IDX > WS-CURRENT-LIVRE
-
-      * Remise à zéro de la ligne de construction SQL
-               INITIALIZE WS-LIGNE-ED
-
-      * Construction de la requête INSERT INTO AUTEURS
-      * Format : INSERT INTO AUTEURS VALUES (ID_AUTEUR, 'NOM','PRENOM');
-               MOVE WS-INSERT-ED        TO WS-LIGNE-ED(1:12)                  
-               MOVE WS-INSERT-AUTEUR-ED TO WS-LIGNE-ED(13:31)
-      * Insertion de l'ID auteur (clé primaire)
-               MOVE WS-NOM-UNIQ(WS-IDX) TO WS-LIGNE-ED(44:13)
-               MOVE "', '"              TO WS-LIGNE-ED(57:4)
-      * Insertion du nom de famille de l'auteur
-               MOVE WS-PRENOM-UNIQ(WS-IDX) TO WS-LIGNE-ED(61:22)
-               MOVE "');"               TO WS-LIGNE-ED(83:3)
-
-      * Écriture conditionnelle : uniquement si nom et prénom existent
-               IF WS-NOM-UNIQ(WS-IDX)    NOT EQUAL SPACE AND
-                  WS-PRENOM-UNIQ(WS-IDX) NOT EQUAL SPACE
-                  WRITE REC-F-OUTPUT FROM WS-LIGNE-ED AFTER 1
-               END-IF
-           END-PERFORM. 
-
-      *----------------------------------------------------------------*
-      * === GÉNÉRATION DES REQUÊTES POUR LA TABLE GENRES ===
-      * Création des requêtes INSERT pour les genres uniques
-      * Évite les doublons grâce au tableau WS-GENRES dédoublonné
-           PERFORM VARYING WS-IDX FROM 1 BY 1 
-                                 UNTIL WS-IDX > WS-CURRENT-LIVRE      
-
-      * Remise à zéro de la ligne de construction SQL
-               INITIALIZE WS-LIGNE-ED
-
-      * Construction de la requête INSERT INTO GENRES
-      * Format : INSERT INTO GENRES VALUES (ID_GENRE, 'LIBELLE_GENRE');
-               MOVE WS-INSERT-ED        TO WS-LIGNE-ED(1:12)                  
-               MOVE WS-INSERT-GENRE-ED  TO WS-LIGNE-ED(13:21)
-      * Insertion du libellé du genre
-               MOVE WS-GENRE-UNIQ(WS-IDX) TO WS-LIGNE-ED(34:16)
-               MOVE "');"               TO WS-LIGNE-ED(50:3)
-
-      * Écriture conditionnelle : uniquement si genre valide et ID > 0
-               IF WS-GENRE-UNIQ(WS-IDX) NOT EQUAL SPACE 
-                                        AND WS-ID-GENRE(WS-IDX) > 0
-                  WRITE REC-F-OUTPUT FROM WS-LIGNE-ED AFTER 1
-               END-IF
-           END-PERFORM. 
-
-       6320-WRITE-F-OUTPUT-FIN.
-           EXIT.
 
       ******************************************************************
       * === 7000 === MODULES COMPLEMENTAIRES                           *
