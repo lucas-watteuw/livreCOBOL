@@ -1,31 +1,27 @@
 CREATE DATABASE IF NOT EXISTS bibli;
 USE bibli;
 
-DROP TABLE IF EXISTS Livres;
-DROP TABLE IF EXISTS Auteurs;
-DROP TABLE IF EXISTS Genre;
-DROP TABLE IF EXISTS Emprunt;
+DROP TABLE IF EXISTS livres;
+DROP TABLE IF EXISTS auteurs;
+DROP TABLE IF EXISTS genre;
+DROP TABLE IF EXISTS emprunt;
 
-CREATE TABLE livres(ID_livres numeric (13) PRIMARY KEY NOT NULL,Titre VARCHAR(38),Date_parution numeric (4),Editions VARCHAR(23)
+CREATE TABLE livres(id_livres NUMERIC(13) PRIMARY KEY NOT NULL, titre VARCHAR(38), date_parution NUMERIC(4), editions VARCHAR(23), id_genre NUMERIC);
+
+CREATE TABLE auteurs(id_auteurs NUMERIC PRIMARY KEY NOT NULL AUTO_INCREMENT, nom VARCHAR(22), prenom VARCHAR(22), livres VARCHAR(38),
+    CONSTRAINT livres FOREIGN KEY (livres) REFERENCES livres (id_livres));
+
+CREATE TABLE genre(id_genre NUMERIC PRIMARY KEY NOT NULL AUTO_INCREMENT, nom VARCHAR(16),
+    CONSTRAINT id_genre FOREIGN KEY (id_genre) REFERENCES livres (id_genre)
 );
 
-CREATE TABLE Auteurs(Nom VARCHAR(22),
-    Prenom VARCHAR(22),
-    Livres VARCHAR(38),
-    CONSTRAINT Livres FOREIGN KEY (Livres) REFERENCES Livres (ID-Livres)
+CREATE TABLE emprunt(id_emprunt NUMERIC PRIMARY KEY NOT NULL AUTO_INCREMENT, statut BOOLEAN, date_emprunt DATE, date_retour DATE,
+    CONSTRAINT statut FOREIGN KEY (statut) REFERENCES livres (id_livres)
 );
 
-CREATE TABLE Genre(
-    ID-Genre INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-    Nom VARCHAR(16) PRIMARY KEY NOT NULL
-)
-
-CREATE TABLE Emprunt(
-    Statut BOOLEAN,
-    Date_emprunt DATE,
-    Date_retour DATE,
-    CONSTRAINT Statut FOREIGN KEY (Statut) REFERENCES Livres (ID_Livres)
-)
+CREATE TABLE auteurs-livres(id_auteurs NUMERIC PRIMARY KEY NOT NULL, id_livres NUMERIC PRIMARY KEY NOT NULL, 
+    CONSTRAINT id_auteurs FOREIGN KEY (id_auteurs) REFERENCES auteurs (id_auteurs), 
+    CONSTRAINT id_livres FOREIGN KEY (id_livres) REFERENCES livres (id_livres));
 
 INSERT INTO auteurs (Nom, Prenom) VALUES ('Orwell', 'George');
 INSERT INTO auteurs (Nom, Prenom) VALUES ('Lee', 'Harper');
