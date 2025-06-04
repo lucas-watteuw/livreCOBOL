@@ -1,6 +1,22 @@
 on commence par se connecter à postgres: psql -U postgres
 on lance le programme: \i exeBDD.sql
 
+
+pour se connecter directement à la base de donnée:
+
+psql -U postgres -d testdb
+
+
+la table livre pour test:
+
+CREATE TABLE Livres(
+    ID_Livres numeric(13) PRIMARY KEY NOT NULL,
+    Titre VARCHAR(38),
+    Date_parution numeric(4),
+    Editions VARCHAR(23)
+);
+
+
 pour compilation:
 
 ocesql menu.cbl menu.cob

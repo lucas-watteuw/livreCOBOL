@@ -8,10 +8,10 @@
 
        EXEC SQL BEGIN DECLARE SECTION END-EXEC.
       *champ de la table Livres
-       01  ID_LIVRES     PIC X(13).
+       01  ID_LIVRES      PIC 9(13).
        01  TITRE          PIC X(38).
-       01  DATE_PARUTION  PIC X(10).
-       01  EDITEUR        PIC 9(24).
+       01  DATE_PARUTION  PIC X(04).
+       01  EDITEUR        PIC X(23).
       *pour se connecter à la database
        01  USERNAME       PIC X(30) VALUE "postgres". *> le nom de l'utilisateur pour postgres
        01  PASSWD         PIC X(30) VALUE "mdp". *> le mot de passe de l'utilisateur
@@ -87,6 +87,8 @@
 
            DISPLAY "vous voulez ajouter un livre".
       *on récupère les donnés à insérer
+           DISPLAY "Entrez l'id du livre(13 chiffres) : ".
+           ACCEPT ID_LIVRES.
            DISPLAY "Entrez le titre du livre : ".
            ACCEPT TITRE.
            DISPLAY "Entrez la date de parution du livre : ".
@@ -95,8 +97,10 @@
            ACCEPT EDITEUR.
       *on essaie d'insérer les données dans la table
            EXEC SQL
-               INSERT INTO livres (Titre, Date_Parution, Editions)
-               VALUES (:TITRE, 
+               INSERT INTO Livres (ID_Livres,Titre, 
+               Date_Parution, Editions)
+               VALUES (:ID_LIVRES, 
+               :TITRE, 
                :DATE_PARUTION,
                :EDITEUR)
            END-EXEC.
@@ -110,14 +114,15 @@
            EXEC SQL COMMIT END-EXEC.
        0100-FIN-ECRIT-LIVRE.
 
+
        0200-PERDRE-LIVRE.
 
            DISPLAY "vous voulez perdre un livre".
-           DISPLAY "entrer un id de livre".
+           DISPLAY "entrer un id de livre(13 chiffres)".
            ACCEPT ID_LIVRES.
 
            EXEC SQL
-           DELETE FROM livres
+           DELETE FROM Livres
            WHERE ID_Livres = :ID_LIVRES 
            END-EXEC.
       *on vérifie si la suppression est réussi
@@ -145,9 +150,9 @@
 
       *on essaie de modifier une donné dans la table
            EXEC SQL
-           UPDATE livres 
+           UPDATE Livres 
            SET Titre = :TITRE, Date_Parution = :DATE_PARUTION, 
-           EDITIONS = :EDITEUR
+           Editions = :EDITEUR
            WHERE ID_Livres = :ID_LIVRES
            END-EXEC.
       *on vérifie si la modification est réussi
