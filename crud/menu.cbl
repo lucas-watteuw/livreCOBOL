@@ -102,7 +102,7 @@
 
            DISPLAY "vous voulez ajouter un livre".
       *on récupère les donnés à insérer
-           DISPLAY "Entrez l'id du livre(13 chiffres) : ".
+           DISPLAY "Entrez le numéro ISBN du livre(13 chiffres) : ".
            ACCEPT ID_LIVRES.
            DISPLAY "Entrez le titre du livre : ".
            ACCEPT TITRE.
@@ -265,7 +265,7 @@
               END-EXEC
    
            WHEN OTHER 
-              DISPLAY "abandon de la rechercher de livre"
+              DISPLAY "abandon de la recherche de livre"
 
            END-EVALUATE.
 
