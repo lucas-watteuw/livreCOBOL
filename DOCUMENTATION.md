@@ -64,7 +64,7 @@ Le programme COBOL principal offre un menu interactif avec les fonctionnalités 
 - **Créer** : Ajout d'un nouveau livre
 - **Modifier** : Mise à jour des informations existantes
 - **Supprimer** : Retrait d'un livre du système
-- **Rechercher** : Consultation et affichage des livres
+- **Rechercher** : Consultation et affichage des livres (en cours de conception)
 
 ### 📚 Gestion des Emprunts (en cours de conception)
 - **Emprunter** : Enregistrement d'un prêt
