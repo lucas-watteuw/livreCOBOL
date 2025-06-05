@@ -30,10 +30,13 @@ Ce projet consiste en un système complet de gestion de bibliothèque développ�
 ### 📊 Structure de la Base de Données
 
 #### 📖 Table `livres`
-**Résumé :** 
+
+**Résumé :**
+
 C'est la table principale de la base de données, elle stocke toutes les informations principales de chaque livre, elle est liée aux tables via des clés étrangères. Ces clés permettent d'obtenir des informations complémentaires sur chaque livre ou de vérifier sa disponibilité.
 
-**Colonnes :** 
+**Colonnes :**
+
 - id_livres : de type NUMERIC, c'est le numéro ISBN, il s'agit également de la clé primaire de la table livres, étant donné que le numéro ISBN est unique, il permet de référencer efficacement les livres
 - titre : de type VARCHAR il a une longueur de 38 qui correspond à la longueur du fichier d'enregistrement
 - date_parution : de type NUMERIC, elle correspond à l'année de parution de chaque livre, la longueur est de 4 pour faciliter l'enregistrement des années
@@ -43,27 +46,36 @@ C'est la table principale de la base de données, elle stocke toutes les informa
 - fk_emprunt : Identifiant emprunt (clé étrangère)
 
 #### ✍️ Table `auteurs`
+
 **Résumé :**
+
 C'est une table qui gère les informations des écrivains, elle permet également via des requêtes de savoirs quels livres chaque écrivains à écrit. Une possibilité d'évolution est d'intégrer plus d'informations sur l'écrivain pour enrichir le contenu.
 
 **Colonnes :**
+
 - id_auteurs : de type SERIAL c'est une clé primaire auto-générée qui va s'incrémenter à chaque nouveau enregistrement, elle permet de référencer chaque auteur avec précision
 - nom : c'est le nom de famille de l'auteur, de type VARCHAR et de longueur 22
 - prenom : le prénom, il peut être optionnel, il est alors marqué par "-" si absent ou non renseigné, il est de type VARCHAR et de longueur 22 comme dans le fichier
 
 #### 🏷️ Table `genres`
-**Résumé :** 
+
+**Résumé :**
+
 Cette table catégorise les livres par type et par genre, une possibilité d'amélioration est d'intégrer des sous-genres et/ou de différencier les différents types de livres et les divers genres qui y sont rattachés.
 
 **Colonnes :**
+
 - id_genre : une clé primaire auto-générée de type SERIAL, elle s'auto-incrémente à chaque nouvel enregistrement, elle permet de catégoriser les livres selon leur genre ou type
 - nom : le nom du genre rattaché à l'ID
 
 #### 📚 Table `emprunts` (en cours de conception)
-**Résumé :** 
+
+**Résumé :**
+
 La table emprunt permet de suivre la disponibilité,les emprunts et les retours des livres. Bien que non sollicitée actuellement dans la version du programme, elle permettra dans une évolution future de gérer cette feature. D'autres informations pourront également y être ajoutées comme le nom et prénom de l'emprunteur et la durée d'emprunt.
 
 **Colonnes :**
+
 - id_emprunt : c'est le numéro d'emprunt qui permet d'identifier les informations propres à chaque emprunt, c'est une clé primaire auto-générée de type SERIAL, elle s'auto-incrémentera à chaque nouvel enregistrement
 - statut : de type BOOLEAN, c'est une colonne qui permettra de définir si le livre est disponible ou non
 - date_emprunt : c'est la date d'emprunt, de type DATE, elle est renseignée dans le programme grâce à l'instruction CURRENT DATE
