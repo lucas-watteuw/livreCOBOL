@@ -81,28 +81,6 @@ La table emprunt permet de suivre la disponibilité,les emprunts et les retours 
 - date_emprunt : c'est la date d'emprunt, de type DATE, elle est renseignée dans le programme grâce à l'instruction CURRENT DATE
 - date_retour : c'est la date de retour, elle est renseignée manuellement mais pourra être fixée, via une évolution future, par une durée d'emprunt, elle est de type DATE
 
----
-
-## 💻 Interface Utilisateur - Menu CRUD
-
-Le programme COBOL principal offre un menu interactif avec les fonctionnalités suivantes :
-
-### ➕ Gestion des Livres
-- **Créer** : Ajout d'un nouveau livre
-- **Modifier** : Mise à jour des informations existantes
-- **Supprimer** : Retrait d'un livre du système
-- **Rechercher** : Consultation et affichage des livres (en cours de conception)
-
-### 📚 Gestion des Emprunts (en cours de conception)
-- **Emprunter** : Enregistrement d'un prêt
-- **Retourner** : Traitement du retour d'un livre
-
-### 📊 Fonctionnalités Avancées
-- **Statistiques** : Rapports et analyses
-- **Quitter** : Sortie propre du programme
-
----
-
 ## 📄 Spécifications du Fichier d'Entrée `.dat`
 
 ### 📋 Format des Données
@@ -199,6 +177,92 @@ Fichier .dat → Lecture COBOL → Tableaux temporaires → Déduplication → F
 - Code modulaire et réutilisable
 - Documentation technique complète
 
----
 
-*Cette documentation sera enrichie au fur et à mesure de l'avancement du projet.*
+## 💻 Interface Utilisateur COBOL - Implémentation du Système CRUD
+
+### 🔌 Initialisation et Connexion
+
+**Phase de démarrage critique :**
+Le programme commence systématiquement par établir une connexion à la base de données. Cette étape constitue un point de contrôle essentiel car sans connexion active, aucune opération CRUD ne peut être exécutée. En cas d'échec de connexion, le programme s'interrompt immédiatement pour éviter des erreurs en cascade.
+
+### 🖥️ Architecture du Menu Principal
+
+**Interface utilisateur simplifiée :**
+Le menu principal utilise une approche directe avec des instructions `DISPLAY` successives pour présenter les options, suivies d'un `ACCEPT` pour capturer le choix de l'utilisateur. Cette méthode, bien que ne faisant pas appel aux sections `SCREEN`, garantit une interface fonctionnelle et accessible.
+
+### ➕ Fonctionnalité d'Ajout de Livre
+
+**Processus de création complet :**
+L'utilisateur doit saisir l'ensemble des informations requises pour le livre avant validation. Le système intègre une vérification d'intégrité référentielle : l'ajout peut être rejeté si l'auteur ou le genre spécifiés n'existent pas dans leurs tables respectives. Cette validation préventive maintient la cohérence des données.
+
+**Contraintes d'intégrité :**
+- Vérification de l'existence de l'auteur dans la table `auteurs`
+- Validation du genre dans la table `genres`
+- Contrôle de l'unicité de l'ISBN
+
+### ❌ Fonctionnalité de Suppression de Livre
+
+**Opération simplifiée :**
+La suppression ne requiert que la saisie de l'ISBN du livre cible. Cette approche minimaliste réduit les risques d'erreur tout en maintenant l'efficacité opérationnelle.
+
+**Processus de suppression :**
+1. Saisie de l'ISBN par l'utilisateur
+2. Recherche et validation de l'existence du livre
+3. Exécution de la requête DELETE
+4. Confirmation de l'opération
+
+### ✏️ Fonctionnalité de Modification de Livre
+
+**Processus de mise à jour structuré :**
+L'utilisateur identifie d'abord le livre à modifier via son ISBN, puis procède à la saisie des nouvelles informations pour tous les champs modifiables.
+
+**Limitation technique importante :**
+La modification de l'ISBN constitue un cas particulier. Étant donné que l'ISBN sert de clé primaire, sa modification directe n'est pas supportée par l'implémentation actuelle. La procédure recommandée consiste à :
+1. Supprimer le livre existant
+2. Créer un nouvel enregistrement avec l'ISBN corrigé
+
+### 🔍 Fonctionnalité de Recherche de Livre (En Développement)
+
+**État d'implémentation actuel :**
+
+**✅ Recherche par ISBN :**
+- **Statut** : Fonctionnelle
+- **Méthode** : Requête directe sur la clé primaire
+- **Performance** : Optimale grâce à l'indexation
+
+**⚠️ Recherche par mot-clé dans le titre :**
+- **Statut** : Problématique
+- **Symptômes** : Résultats incohérents (tous les titres ou aucun)
+- **Cause probable** : Requête SQL mal formée pour la recherche LIKE
+- **Action requise** : Révision de la syntaxe SQL
+
+**❌ Recherches avancées :**
+- **Recherche par auteur** : Non implémentée
+- **Recherche par genre** : Non implémentée
+- **Recherche multicritères** : Planifiée pour les versions futures
+
+### 📚 Système d'Emprunt (Non Implémenté)
+
+**Fonctionnalités prévues :**
+- **Emprunt de livre** : En attente de développement
+- **Retour de livre** : Dépendant de l'implémentation des emprunts
+- **Suivi des statuts** : Utilisation de la table `emprunts`
+
+**Architecture préparée :**
+La structure de base de données inclut déjà la table `emprunts` avec les champs nécessaires pour supporter ces fonctionnalités futures.
+
+### 🔧 Points Techniques d'Amélioration
+
+**Priorités de développement :**
+1. **Correction de la recherche par titre** : Révision des requêtes SQL LIKE
+2. **Implémentation des recherches par auteur/genre** : Requêtes avec jointures
+3. **Développement du système d'emprunt** : Logique métier complète
+4. **Optimisation des performances** : Indexation et requêtes optimisées
+
+**Défis techniques identifiés :**
+- Gestion des caractères spéciaux dans les recherches textuelles
+- Performance des requêtes avec jointures multiples
+- Validation des données utilisateur
+- Gestion des erreurs et des cas limites
+
+---
